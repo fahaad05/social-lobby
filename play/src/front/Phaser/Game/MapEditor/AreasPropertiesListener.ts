@@ -922,6 +922,9 @@ export class AreasPropertiesListener {
     }
 
     private handleJitsiRoomPropertyOnEnter(property: JitsiRoomPropertyData): void {
+        if (!property.jitsiUrl && !JITSI_URL && !JITSI_PRIVATE_MODE) {
+            return;
+        }
         const openJitsiRoomFunction = async () => {
             const roomName = Jitsi.slugifyJitsiRoomName(property.roomName, this.scene.roomUrl, property.noPrefix);
             let jitsiUrl = property.jitsiUrl;
@@ -938,8 +941,9 @@ export class AreasPropertiesListener {
             }
 
             jitsiUrl = jitsiUrl || JITSI_URL;
-            if (jitsiUrl === undefined) {
-                throw new Error("Missing JITSI_URL environment variable or jitsiUrl parameter in the map.");
+            if (!jitsiUrl) {
+                console.warn("Jitsi is disabled: JITSI_URL is not configured.");
+                return;
             }
 
             if (!jitsiUrl.startsWith("http://") && !jitsiUrl.startsWith("https://")) {
