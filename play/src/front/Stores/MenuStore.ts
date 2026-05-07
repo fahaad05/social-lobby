@@ -90,7 +90,7 @@ interface ScriptingMenu {
 
 export type MenuItem = TranslatedMenu | ScriptingMenu;
 
-export const inviteUserActivated = writable(true);
+export const inviteUserActivated = writable(false);
 export const mapEditorActivated = writable(false);
 export const mapManagerActivated = writable(true);
 export const screenSharingActivatedStore = writable(true);
