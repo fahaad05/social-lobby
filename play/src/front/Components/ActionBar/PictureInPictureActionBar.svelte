@@ -1,6 +1,6 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
-    import { silentStore } from "../../Stores/MediaStore";
+    import { localMediaDisabled, silentStore } from "../../Stores/MediaStore";
 
     import {
         inExternalServiceStore,
@@ -37,11 +37,11 @@
                 <div>
                     <!-- ACTION WRAPPER : CAM & MIC -->
                     <div class="group/hardware flex items-center relative">
-                        {#if !$inExternalServiceStore && !$silentStore && $proximityMeetingStore && $myMicrophoneStore}
+                        {#if !localMediaDisabled && !$inExternalServiceStore && !$silentStore && $proximityMeetingStore && $myMicrophoneStore}
                             <MicrophoneMenuItem />
                         {/if}
                         <!-- NAV : CAMERA START -->
-                        {#if !$inExternalServiceStore && $myCameraStore && !$silentStore}
+                        {#if !localMediaDisabled && !$inExternalServiceStore && $myCameraStore && !$silentStore}
                             <CameraMenuItem />
                         {/if}
                         <!-- NAV : CAMERA END -->

@@ -636,7 +636,8 @@ export class SocketManager {
             joinSpaceRequestMessage: {
                 // FIXME: before fixing the fact that spaceName is undefined, let's try to understand why I don't have any info about the user in the error caught above
                 spaceName: group.spaceName,
-                propertiesToSync: ["cameraState", "microphoneState", "screenSharingState"],
+                // Disable media sync (camera/microphone/screen) when local media capture is disabled.
+                propertiesToSync: [],
             },
         });
     }

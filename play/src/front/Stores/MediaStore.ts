@@ -30,6 +30,9 @@ import { isLiveStreamingStore } from "./IsStreamingStore";
 
 import { backgroundConfigStore, backgroundProcessingEnabledStore } from "./BackgroundTransformStore";
 
+// Set to true to disable local microphone/camera capture while keeping audio playback intact.
+export const localMediaDisabled = true;
+
 export const inBackgroundSettingsStore = writable<boolean>(false);
 
 export type MediaAccessIssue = "permission_denied" | "no_device";
@@ -627,6 +630,30 @@ async function runRawStreamUpdate(
     setIfCurrent: SetRawStreamIfCurrent,
     generation: number
 ): Promise<{ video: false | MediaTrackConstraints; audio: false | MediaTrackConstraints }> {
+    if (localMediaDisabled) {
+        if (currentStream) {
+            currentStream.getTracks().forEach((track) => track.stop());
+            currentStream = undefined;
+        }
+
+        cameraAccessIssueStore.set(null);
+        microphoneAccessIssueStore.set(null);
+
+        batchGetUserMediaStore.startBatch();
+        requestedCameraState.disableWebcam();
+        requestedMicrophoneState.disableMicrophone();
+        usedCameraDeviceIdStore.set(undefined);
+        usedMicrophoneDeviceIdStore.set(undefined);
+        batchGetUserMediaStore.commitChanges();
+
+        setIfCurrent({
+            type: "success",
+            stream: undefined,
+        });
+
+        return { video: false, audio: false };
+    }
+
     if (navigator.mediaDevices === undefined) {
         if (window.location.protocol === "http:") {
             setIfCurrent({
