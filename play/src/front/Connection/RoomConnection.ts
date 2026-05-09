@@ -565,11 +565,7 @@ export class RoomConnection implements RoomConnection {
                         this.userId = roomJoinedMessage.currentUserId;
                         this._userRoomToken = roomJoinedMessage.userRoomToken;
                         //define if there is invite user option activated
-                        inviteUserActivated.set(
-                            roomJoinedMessage.activatedInviteUser != undefined
-                                ? roomJoinedMessage.activatedInviteUser
-                                : true
-                        );
+                        inviteUserActivated.set(false);
                         this.canEdit = roomJoinedMessage.canEdit;
                         mapEditorActivated.set(ENABLE_MAP_EDITOR && this.canEdit);
 
