@@ -153,6 +153,11 @@ export class GameMapPropertiesListener {
                     return;
                 }
             }
+            const isJitsiUrlFromMap = z.string().optional().safeParse(allProps.get(GameMapProperties.JITSI_URL));
+            const mapJitsiUrl = isJitsiUrlFromMap.success ? isJitsiUrlFromMap.data : undefined;
+            if (!mapJitsiUrl && !JITSI_URL && !JITSI_PRIVATE_MODE) {
+                return;
+            }
             const openJitsiRoomFunction = async () => {
                 const roomName = Jitsi.slugifyJitsiRoomName(
                     newValue.toString(),
@@ -183,8 +188,9 @@ export class GameMapPropertiesListener {
                 }
 
                 let domain = jitsiUrl || JITSI_URL;
-                if (domain === undefined) {
-                    throw new Error("Missing JITSI_URL environment variable or jitsiUrl parameter in the map.");
+                if (!domain) {
+                    console.warn("Jitsi is disabled: JITSI_URL is not configured.");
+                    return;
                 }
                 if (!domain.startsWith("http")) {
                     domain = "https://" + domain;
