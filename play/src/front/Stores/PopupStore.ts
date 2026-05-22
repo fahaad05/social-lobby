@@ -6,6 +6,9 @@ export const bannerVisible = writable(true);
 export const currentBannerIndex = writable(0);
 export const showPopup = writable(false);
 
+// When true, the Say popup is always visible.
+export const persistentSayPopup = true;
+
 type Props = Record<string, unknown>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

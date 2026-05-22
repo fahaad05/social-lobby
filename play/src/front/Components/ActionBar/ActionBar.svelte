@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { SvelteComponentTyped } from "svelte";
     import { silentStore } from "../../Stores/MediaStore";
+    import { localMediaDisabled } from "../../Stores/MediaStore";
 
     import { gameManager } from "../../Phaser/Game/GameManager";
     import { chatVisibilityStore } from "../../Stores/ChatStore";
@@ -74,7 +75,7 @@
                 <div>
                     <!-- ACTION WRAPPER : CAM & MIC -->
                     <div class="group/hardware flex items-center relative">
-                        {#if !$inExternalServiceStore && $proximityMeetingStore && $myMicrophoneStore}
+                        {#if !localMediaDisabled && !$inExternalServiceStore && $proximityMeetingStore && $myMicrophoneStore}
                             <MicrophoneMenuItem />
                         {/if}
 
@@ -103,7 +104,7 @@
                             <MediaSettingsList on:close={() => mediaSettingsOpenStore.set(false)} />
                         {/if}
                         <!-- NAV : CAMERA START -->
-                        {#if !$inExternalServiceStore && $myCameraStore}
+                        {#if !localMediaDisabled && !$inExternalServiceStore && $myCameraStore}
                             <CameraMenuItem />
                         {/if}
                         <!-- NAV : CAMERA END -->

@@ -14,6 +14,7 @@
         requestedMicrophoneState,
         speakerSelectedStore,
         localStreamStore,
+        localMediaDisabled,
     } from "../../Stores/MediaStore";
     import type { Game } from "../../Phaser/Game/Game";
     import { LL, locale } from "../../../i18n/i18n-svelte";
@@ -126,6 +127,9 @@
     });
 
     onMount(() => {
+        if (localMediaDisabled) {
+            return;
+        }
         //init the component to enable webcam and microphone
         batchGetUserMediaStore.startBatch();
         myCameraStore.set(true);

@@ -12,6 +12,7 @@
         inBbbStore,
         inJitsiStore,
         inLivekitStore,
+        localMediaDisabled,
     } from "../../../Stores/MediaStore";
     import { isInRemoteConversation } from "../../../Stores/StreamableCollectionStore";
 
@@ -291,9 +292,11 @@
                 <!--                                    <div class="text-left flex items-center">{$LL.actionbar.quest()}</div>-->
                 <!--                                </button>-->
                 <HeaderMenuItem label={$LL.menu.sub.settings()} />
-                <ActionBarButton label={$LL.actionbar.editCamMic()} on:click={openEnableCameraScene}>
-                    <CamSettingsIcon />
-                </ActionBarButton>
+                {#if !localMediaDisabled}
+                    <ActionBarButton label={$LL.actionbar.editCamMic()} on:click={openEnableCameraScene}>
+                        <CamSettingsIcon />
+                    </ActionBarButton>
+                {/if}
 
                 {#if SENTRY_DSN_FRONT != undefined && connectionManager.currentRoom?.isIssueReportEnabled}
                     <ActionBarButton label={$LL.actionbar.issueReport.menuAction()} on:click={openFeedbackScene}>

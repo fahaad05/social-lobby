@@ -1,11 +1,10 @@
 <script lang="ts">
-    import { AvailabilityStatus, SayMessageType } from "@workadventure/messages";
+    import { SayMessageType } from "@workadventure/messages";
     import { createEventDispatcher, onDestroy, onMount } from "svelte";
     import { gameManager } from "../../Phaser/Game/GameManager";
     import { inputFormFocusStore } from "../../Stores/UserInputStore";
     import { popupJustClosed } from "../../Phaser/Game/Say/SayManager";
     import Select from "../Input/Select.svelte";
-    import { availabilityStatusStore } from "../../Stores/MediaStore";
     import LL from "../../../i18n/i18n-svelte";
     import Input from "../Input/Input.svelte";
     import ButtonClose from "../Input/ButtonClose.svelte";
@@ -13,43 +12,22 @@
     import { IconSend } from "@wa-icons";
 
     export let type: "say" | "think" = "say";
+    export let persist = false;
     let message = "";
     let messageInput: Input;
 
     const dispatch = createEventDispatcher<{ close: void }>();
 
     function closeBanner() {
+        if (persist) {
+            return;
+        }
         dispatch("close");
     }
 
     onMount(() => {
         messageInput.focusInput();
     });
-
-    $: {
-        switch ($availabilityStatusStore) {
-            case AvailabilityStatus.JITSI:
-            case AvailabilityStatus.BBB:
-            case AvailabilityStatus.LIVEKIT:
-            case AvailabilityStatus.DENY_PROXIMITY_MEETING:
-            case AvailabilityStatus.SPEAKER: {
-                type = "say";
-                break;
-            }
-            case AvailabilityStatus.SILENT:
-            case AvailabilityStatus.AWAY:
-            case AvailabilityStatus.DO_NOT_DISTURB:
-            case AvailabilityStatus.BACK_IN_A_MOMENT:
-            case AvailabilityStatus.BUSY: {
-                type = "think";
-                break;
-            }
-            default: {
-                console.warn("Say: unknown status ", $availabilityStatusStore);
-                break;
-            }
-        }
-    }
 
     onDestroy(() => {
         // Firefox does not trigger the "blur" event when the input is removed from the DOM.
@@ -96,20 +74,24 @@
             type === "say" ? 5000 : undefined
         );
         message = "";
-        closeBanner();
+        if (!persist) {
+            closeBanner();
+        }
     }
 </script>
 
 <svelte:window on:keydown={onKeyDown} />
 <PopUpContainer reduceOnSmallScreen={true} fullContent={true}>
     <div class="flex flex-row w-full items-center gap-2 min-w-80" data-testid="say-popup">
-        <ButtonClose
-            on:click={closeBanner}
-            bgColor="bg-constrast"
-            hoverColor="bg-white/20"
-            size="md"
-            dataTestId="btn-close-say-popup"
-        />
+        {#if !persist}
+            <ButtonClose
+                on:click={closeBanner}
+                bgColor="bg-constrast"
+                hoverColor="bg-white/20"
+                size="md"
+                dataTestId="btn-close-say-popup"
+            />
+        {/if}
         <div class="flex-none w-24">
             <Select
                 bind:value={type}

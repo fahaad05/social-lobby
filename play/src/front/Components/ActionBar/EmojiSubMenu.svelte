@@ -20,7 +20,7 @@
     import LazyEmote from "../EmoteMenu/LazyEmote.svelte";
     import HelpTooltip from "../Tooltip/HelpTooltip.svelte";
     import { connectionManager } from "../../Connection/ConnectionManager";
-    import { popupStore } from "../../Stores/PopupStore";
+    import { persistentSayPopup, popupStore } from "../../Stores/PopupStore";
     import SayPopUp from "../PopUp/SayPopUp.svelte";
     import { gameManager } from "../../Phaser/Game/GameManager";
     import { IconPencil, IconXIcon } from "@wa-icons";
@@ -249,7 +249,9 @@
                         on:mouseenter={() => (showSayBubbleTooltip = true)}
                         on:mouseleave={() => (showSayBubbleTooltip = false)}
                         on:click={() => {
-                            popupStore.addPopup(SayPopUp, { type: "say" }, "say");
+                            if (!persistentSayPopup) {
+                                popupStore.addPopup(SayPopUp, { type: "say" }, "say");
+                            }
                             analyticsClient.openSayBubble();
                         }}
                         data-testid="say-bubble-button"
@@ -272,7 +274,9 @@
                         on:mouseenter={() => (showThinkBubbleTooltip = true)}
                         on:mouseleave={() => (showThinkBubbleTooltip = false)}
                         on:click={() => {
-                            popupStore.addPopup(SayPopUp, { type: "think" }, "say");
+                            if (!persistentSayPopup) {
+                                popupStore.addPopup(SayPopUp, { type: "think" }, "say");
+                            }
                             analyticsClient.openThinkBubble();
                         }}
                         data-testid="think-bubble-button"

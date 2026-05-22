@@ -11,7 +11,7 @@ import { displayEmote, isEmoteIndex } from "../../Stores/EmoteStore";
 import { analyticsClient } from "../../Administration/AnalyticsClient";
 import { navChat } from "../../Chat/Stores/ChatStore";
 import { chatVisibilityStore } from "../../Stores/ChatStore";
-import { popupStore } from "../../Stores/PopupStore";
+import { persistentSayPopup, popupStore } from "../../Stores/PopupStore";
 import SayPopUp from "../../Components/PopUp/SayPopUp.svelte";
 import { isPopupJustClosed } from "../Game/Say/SayManager";
 import LL from "../../../i18n/i18n-svelte";
@@ -284,6 +284,9 @@ export class GameSceneUserInputHandler implements UserInputHandlerInterface {
 
     private openSayPopup(): void {
         if (!this.gameScene.room.isSayEnabled) {
+            return;
+        }
+        if (persistentSayPopup) {
             return;
         }
         // Don't open if we just closed.
