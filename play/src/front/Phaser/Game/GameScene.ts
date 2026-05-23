@@ -710,6 +710,36 @@ export class GameScene extends DirtyScene {
         //permit to set bound collision
         this.physics.world.setBounds(0, 0, this.Map.widthInPixels, this.Map.heightInPixels);
 
+        // Render background image (set via "backgroundImage" map property).
+        // "backgroundScale" (0.0–1.0) controls how much of the map the image fills; defaults to 1.
+        {
+            const bgProp = this.mapFile.properties?.find((p: { name: string }) => p.name === "backgroundImage");
+            if (bgProp?.value) {
+                const bgDirUrl = this.mapUrlFile.substring(0, this.mapUrlFile.lastIndexOf("/"));
+                const bgUrl = `${bgDirUrl}/${bgProp.value as string}`;
+                const bgScaleProp = this.mapFile.properties?.find(
+                    (p: { name: string }) => p.name === "backgroundScale"
+                );
+                const bgScale = typeof bgScaleProp?.value === "number" ? bgScaleProp.value : 1;
+                const addBg = () => {
+                    const bg = this.add.image(
+                        this.Map.widthInPixels / 2,
+                        this.Map.heightInPixels / 2,
+                        "map-background-image"
+                    );
+                    bg.setDisplaySize(this.Map.widthInPixels * bgScale, this.Map.heightInPixels * bgScale);
+                    bg.setDepth(-3);
+                };
+                if (this.textures.exists("map-background-image")) {
+                    addBg();
+                } else {
+                    this.load.once("filecomplete-image-map-background-image", addBg);
+                    this.load.image("map-background-image", bgUrl);
+                    this.load.start();
+                }
+            }
+        }
+
         this.embeddedWebsiteManager = new EmbeddedWebsiteManager(this);
 
         //add layer on map

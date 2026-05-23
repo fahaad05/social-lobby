@@ -19,71 +19,67 @@
     const dispatch = createEventDispatcher<{ close: void }>();
 
     function closeBanner() {
-        if (persist) {
-            return;
-        }
+        if (persist) return;
         dispatch("close");
     }
 
     onMount(() => {
-        messageInput.focusInput();
+        if (!persist) messageInput.focusInput();
     });
 
     onDestroy(() => {
-        // Firefox does not trigger the "blur" event when the input is removed from the DOM.
-        // So we need to manually set the focus to false when the component is destroyed.
         inputFormFocusStore.set(false);
-        // When we press "Enter", since the enter key is the key to open the popup,
-        // the popup closes and opens again. We use this lastSayPopupCloseDate trick to
-        // prevent the popup from opening again if it just closed.
         popupJustClosed();
     });
 
     const onKeyDown = (e: KeyboardEvent) => {
-        if (e.key === "Escape") {
-            closeBanner();
-        }
+        if (e.key === "Escape") closeBanner();
     };
 
     function sendMessageOrEscapeLine(keyDownEvent: KeyboardEvent | MouseEvent) {
         if (keyDownEvent instanceof MouseEvent) {
-            const messageToSend = message.replace(/<br>/g, "\n");
-            sendMessage(messageToSend);
+            sendMessage(message.replace(/<br>/g, "\n"));
             return;
         }
-        if (keyDownEvent.key === "Enter" && keyDownEvent.shiftKey) {
-            return;
-        }
-        if (keyDownEvent.key === "Enter" && !keyDownEvent.shiftKey) {
-            keyDownEvent.preventDefault();
-        }
-
+        if (keyDownEvent.key === "Enter" && keyDownEvent.shiftKey) return;
+        if (keyDownEvent.key === "Enter" && !keyDownEvent.shiftKey) keyDownEvent.preventDefault();
         if (keyDownEvent.key === "Enter" && message.trim().length !== 0) {
-            // message contains HTML tags. Actually, the only tags we allow are for the new line, ie. <br> tags.
-            // We can turn those back into carriage returns.
-            const messageToSend = message.replace(/<br>/g, "\n");
-            sendMessage(messageToSend);
+            sendMessage(message.replace(/<br>/g, "\n"));
         }
     }
 
-    function sendMessage(message: string) {
+    function sendMessage(msg: string) {
         const gameScene = gameManager.getCurrentGameScene();
         gameScene.sayManager.say(
-            message,
+            msg,
             type === "say" ? SayMessageType.SpeechBubble : SayMessageType.ThinkingCloud,
             type === "say" ? 5000 : undefined
         );
         message = "";
-        if (!persist) {
-            closeBanner();
-        }
+        if (!persist) closeBanner();
     }
 </script>
 
 <svelte:window on:keydown={onKeyDown} />
-<PopUpContainer reduceOnSmallScreen={true} fullContent={true}>
-    <div class="flex flex-row w-full items-center gap-2 min-w-80" data-testid="say-popup">
-        {#if !persist}
+
+{#if persist}
+    <div class="ms-bar" data-testid="say-popup">
+        <button class="ms-btn ms-channel">ALL</button>
+        <input
+            class="ms-input"
+            type="text"
+            bind:value={message}
+            placeholder="Type here and press Enter to chat..."
+            on:keydown={sendMessageOrEscapeLine}
+            on:focusin={() => inputFormFocusStore.set(true)}
+            on:focusout={() => inputFormFocusStore.set(false)}
+            maxlength={100}
+        />
+        <button class="ms-btn ms-send" on:click={sendMessageOrEscapeLine}>▶</button>
+    </div>
+{:else}
+    <PopUpContainer reduceOnSmallScreen={true} fullContent={true}>
+        <div class="flex flex-row w-full items-center gap-2 min-w-80" data-testid="say-popup">
             <ButtonClose
                 on:click={closeBanner}
                 bgColor="bg-constrast"
@@ -91,61 +87,112 @@
                 size="md"
                 dataTestId="btn-close-say-popup"
             />
-        {/if}
-        <div class="flex-none w-24">
-            <Select
-                bind:value={type}
-                options={[
-                    {
-                        value: "say",
-                        label: $LL.say.type.say(),
-                    },
-                    {
-                        value: "think",
-                        label: $LL.say.type.think(),
-                    },
-                ]}
-                extraSelectClass="!mb-0"
-            />
+            <div class="flex-none w-24">
+                <Select
+                    bind:value={type}
+                    options={[
+                        { value: "say", label: $LL.say.type.say() },
+                        { value: "think", label: $LL.say.type.think() },
+                    ]}
+                    extraSelectClass="!mb-0"
+                />
+            </div>
+            <div class="flex flex-row gap-2">
+                <Input
+                    onKeyDown={sendMessageOrEscapeLine}
+                    bind:value={message}
+                    bind:this={messageInput}
+                    placeholder={$LL.say.placeholder()}
+                    extraInputClasses="!mb-0"
+                    maxlength={100}
+                />
+                <button
+                    class="h-10 {message.length > 0
+                        ? 'w-10'
+                        : 'w-0'} p-0 aspect-square bg-secondary rounded flex items-center justify-center cursor-pointer transition-all"
+                    on:click={sendMessageOrEscapeLine}
+                >
+                    <IconSend />
+                </button>
+            </div>
         </div>
-        <div class="flex flex-row gap-2">
-            <!--            <MessageInput-->
-            <!--                onKeyDown={sendMessageOrEscapeLine}-->
-            <!--                bind:message-->
-            <!--                bind:messageInput-->
-            <!--                inputClass="message-input flex-grow !m-0 px-1 py-2.5 max-h-36 overflow-auto  h-full rounded-xl wa-searchbar block text-white placeholder:text-base border-light-purple border !bg-transparent resize-none border-none outline-none shadow-none focus:ring-0"-->
-            <!--            />-->
+    </PopUpContainer>
+{/if}
 
-            <Input
-                onKeyDown={sendMessageOrEscapeLine}
-                bind:value={message}
-                bind:this={messageInput}
-                placeholder={$LL.say.placeholder()}
-                extraInputClasses="!mb-0"
-                maxlength={100}
-            />
-            <button
-                class="h-10 {message.length > 0
-                    ? 'w-10'
-                    : 'w-0'} p-0 aspect-square bg-secondary rounded flex items-center justify-center cursor-pointer transition-all"
-                on:click={sendMessageOrEscapeLine}
-            >
-                <IconSend />
-            </button>
-        </div>
-    </div>
-    <!--    <div slot="buttons">-->
-    <!--            <button-->
-    <!--                class="btn btn-secondary w-full !p-0 h-8 items-center btn-sm z-50 pointer-events-auto"-->
-    <!--                on:click={sendMessageOrEscapeLine}-->
-    <!--            >-->
-    <!--                {$LL.say.send()}-->
-    <!--                {#if type === "say"}-->
-    <!--                    {$LL.say.type.say()}-->
-    <!--                {:else}-->
-    <!--                    {$LL.say.type.think()}-->
-    <!--                {/if}-->
-    <!--                {$LL.say.bubble()}-->
-    <!--            </button>-->
-    <!--    </div>-->
-</PopUpContainer>
+<style>
+    .ms-bar {
+        display: flex;
+        align-items: center;
+        background: #c0c0c0;
+        border-top: 2px solid #ffffff;
+        border-left: 2px solid #ffffff;
+        border-right: 2px solid #808080;
+        border-bottom: 2px solid #808080;
+        box-shadow: inset -1px -1px 0 #404040, inset 1px 1px 0 #dfdfdf;
+        padding: 5px 7px;
+        gap: 6px;
+        width: 100%;
+        pointer-events: auto;
+        font-family: "Tahoma", "MS Sans Serif", Arial, sans-serif;
+    }
+
+    .ms-btn {
+        background: #c0c0c0;
+        border-top: 2px solid #ffffff;
+        border-left: 2px solid #ffffff;
+        border-right: 2px solid #404040;
+        border-bottom: 2px solid #404040;
+        box-shadow: inset -1px -1px 0 #000000, inset 1px 1px 0 #dfdfdf;
+        color: #000000;
+        font-family: "Tahoma", "MS Sans Serif", Arial, sans-serif;
+        font-size: 15px;
+        font-weight: bold;
+        padding: 3px 10px;
+        height: 34px;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .ms-btn:active {
+        border-top: 2px solid #404040;
+        border-left: 2px solid #404040;
+        border-right: 2px solid #ffffff;
+        border-bottom: 2px solid #ffffff;
+        box-shadow: inset 1px 1px 0 #000000;
+    }
+
+    .ms-channel {
+        min-width: 64px;
+    }
+
+    .ms-send {
+        width: 34px;
+        padding: 0;
+    }
+
+    .ms-input {
+        flex: 1;
+        background: #ffffff;
+        border-top: 2px solid #808080;
+        border-left: 2px solid #808080;
+        border-right: 2px solid #dfdfdf;
+        border-bottom: 2px solid #dfdfdf;
+        box-shadow: inset 1px 1px 0 #404040;
+        color: #000000;
+        font-family: "Tahoma", "MS Sans Serif", Arial, sans-serif;
+        font-size: 16px;
+        padding: 3px 8px;
+        outline: none;
+        height: 34px;
+    }
+
+    .ms-input::placeholder {
+        color: #808080;
+        font-style: italic;
+    }
+
+    .ms-input:focus {
+        outline: none;
+    }
+</style>
