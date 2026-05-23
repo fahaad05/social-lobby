@@ -47,6 +47,8 @@ import { PinchManager } from "../UserInput/PinchManager";
 import { waScaleManager } from "../Services/WaScaleManager";
 import { lazyLoadPlayerCharacterTextures } from "../Entity/PlayerTexturesLoadingManager";
 import { lazyLoadPlayerCompanionTexture } from "../Companion/CompanionTexturesLoadingManager";
+import { NPC } from "../Entity/NPC";
+import type { NPCDef } from "../Entity/NPC";
 import { iframeListener } from "../../Api/IframeListener";
 import { coWebsiteManager, coWebsites } from "../../Stores/CoWebsiteStore";
 import {
@@ -373,6 +375,7 @@ export class GameScene extends DirtyScene {
     private playersEventDispatcher = new IframeEventDispatcher();
     private playersMovementEventDispatcher = new IframeEventDispatcher();
     private remotePlayersRepository = new RemotePlayersRepository();
+    private npcs: NPC[] = [];
     private throttledSendViewportToServer_!: throttle<() => void>;
     private lastSentViewport: ViewportInterface | undefined;
     private serverViewportDebugGraphics: Phaser.GameObjects.Graphics | undefined;
@@ -941,6 +944,7 @@ export class GameScene extends DirtyScene {
         }
 
         this.reposition(true);
+        this.spawnMapNPCs();
 
         this.gameMapPropertiesListener = new GameMapPropertiesListener(this, this.gameMapFrontWrapper);
         this.gameMapPropertiesListener.register();
@@ -3756,6 +3760,21 @@ ${escapedMessage}
     private getExitSceneUrl(layer: ITiledMapLayer): string | undefined {
         const property = PropertyUtils.findStringProperty(GameMapProperties.EXIT_SCENE_URL, layer.properties);
         return property;
+    }
+
+    private spawnMapNPCs(): void {
+        const raw = PropertyUtils.findStringProperty("npcs", this.mapFile.properties);
+        if (!raw) return;
+        let defs: NPCDef[];
+        try {
+            defs = JSON.parse(raw) as NPCDef[];
+        } catch (e) {
+            console.error("Could not parse 'npcs' map property:", e);
+            return;
+        }
+        for (const def of defs) {
+            this.npcs.push(NPC.spawn(this, def));
+        }
     }
 
     private getScriptUrls(map: ITiledMap): string[] {

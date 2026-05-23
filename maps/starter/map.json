@@ -12,6 +12,11 @@
    "name": "backgroundScale",
    "type": "float",
    "value": 1.0
+  },
+  {
+   "name": "npcs",
+   "type": "string",
+   "value": "[{\"name\":\"Max\",\"x\":640,\"y\":320,\"gender\":\"male\"},{\"name\":\"Nina\",\"x\":800,\"y\":256,\"gender\":\"female\"}]"
   }
  ],
  "layers": [
