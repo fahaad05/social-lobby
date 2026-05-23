@@ -287,13 +287,13 @@
 
     <div class="flex min-h-full flex-col-reverse mobile:flex-col">
         <section id="main-layout-main" class="pb-0 flex-1 pointer-events-none h-full w-full relative">
+            {#if persistentSayPopup}
+                <div class="fixed z-[1000] bottom-0 left-0 right-0 mobile:bottom-24 pointer-events-auto">
+                    <SayPopUp persist={true} />
+                </div>
+            {/if}
             <div class="fixed z-[1000] bottom-0 start-0 right-0 m-auto w-max mobile:w-[98vw] md:max-w-[80%]">
                 <div class="popups flex items-end relative w-full justify-center mobile:mb-24 mb-4 h-[calc(100%-96px)]">
-                    {#if persistentSayPopup}
-                        <div class="popupwrapper popupwrapper-persistent w-full flex-1">
-                            <SayPopUp persist={true} />
-                        </div>
-                    {/if}
                     {#each $popupStore.slice().reverse() as popup, index (popup.uuid)}
                         <div class="popupwrapper popupwrapper-{index} w-full flex-1" in:fly={{ y: 150, duration: 550 }}>
                             <svelte:component
